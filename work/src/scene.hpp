@@ -46,6 +46,10 @@ private:
 	// YOUR CODE GOES HERE
 	// ...
 
+	int boid_num = 15;
+	float max_boid_v = 15.0;
+	float min_boid_v = -15.0;
+
 public:
 
 	Scene();
@@ -72,5 +76,11 @@ public:
 
 	// YOUR CODE GOES HERE
 	// ...
+	glm::vec3 get_bound_size();
 
+	float get_boid_max_v();
+
+	float get_boid_min_v();
+
+	std::vector<Boid> get_boids();
 };

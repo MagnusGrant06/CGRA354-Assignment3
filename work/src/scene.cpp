@@ -74,7 +74,10 @@ void Scene::loadCore() {
 
 	// this creates a boid with a random location in [-1, 1]^3 and random velocity (magnitude = 1)
 	m_boids.clear();
-	m_boids.push_back(Boid(linearRand(vec3(-1), vec3(1)), sphericalRand(1.0)));
+	for (int i = 0; i < boid_num; i++) {
+		m_boids.push_back(Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v)));
+	}
+	//m_boids.push_back(Boid(linearRand(vec3(-1), vec3(1)), sphericalRand(1.0)));
 
 }
 
@@ -103,6 +106,22 @@ void Scene::loadChallenge() {
 	// YOUR CODE GOES HERE
 	// ...
 
+}
+
+glm::vec3 Scene::get_bound_size() {
+	return m_bound_hsize;
+}
+
+float Scene::get_boid_max_v() {
+	return max_boid_v;
+}
+
+float Scene::get_boid_min_v() {
+	return min_boid_v;
+}
+
+std::vector<Boid> Scene::get_boids() {
+	return m_boids;
 }
 
 
