@@ -3,7 +3,7 @@
 
 // glm
 #include <glm/glm.hpp>
-
+#include <vector>
 // project
 class Scene;
 
@@ -32,6 +32,10 @@ public:
 	void calculateForces(Scene *scene);
 	void update(float timestep, Scene *scene);
 
-	glm::vec3 calculate_avoidance(const Boid* origin_boid, const Boid* other_boid);
+	glm::vec3 calculate_avoidance(std::vector<Boid>& boids);
+
+	glm::vec3 calculate_cohesion(std::vector<Boid>& boids);
+	glm::vec3 calculate_alignment(std::vector<Boid>& boids);
+
 
 };

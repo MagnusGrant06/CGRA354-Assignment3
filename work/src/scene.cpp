@@ -120,8 +120,12 @@ float Scene::get_boid_min_v() {
 	return min_boid_v;
 }
 
-std::vector<Boid> Scene::get_boids() {
+std::vector<Boid>& Scene::get_boids() {
 	return m_boids;
+}
+
+float Scene::get_radius() {
+	return valid_radius;
 }
 
 
@@ -254,7 +258,12 @@ void Scene::renderGUI() {
 	//-------------------------------------------------------------
 	
 	ImGui::SliderFloat3("Bound hsize", value_ptr(m_bound_hsize), 0, 100.0, "%.0f");
-
+	ImGui::SliderFloat("Minimum Boid Speed", &min_boid_v, 1.0, 20.0);
+	ImGui::SliderFloat("Maximum Boid Speed", &max_boid_v, 1.0, 20.0);
+	ImGui::SliderFloat("Neighbourhood Size", &valid_radius,0.1,10);
+	ImGui::SliderFloat("Avoidance Weight", &avoidance_weight, 0.1, 5.0);
+	ImGui::SliderFloat("Cohesion Weight", &cohesion_weight, 0.1, 5.0);
+	ImGui::SliderFloat("Alignment Weight", &alignment_weight, 0.1, 5.0);
 	// YOUR CODE GOES HERE
 	// ...
 

@@ -46,11 +46,17 @@ private:
 	// YOUR CODE GOES HERE
 	// ...
 
-	int boid_num = 15;
+	int boid_num = 300;
 	float max_boid_v = 15.0;
 	float min_boid_v = -15.0;
+	float valid_radius = 5;
 
 public:
+
+	float avoidance_weight = 1.0;
+	float cohesion_weight = 1.0;
+	float alignment_weight = 1.0;
+
 
 	Scene();
 
@@ -82,5 +88,7 @@ public:
 
 	float get_boid_min_v();
 
-	std::vector<Boid> get_boids();
+	std::vector<Boid>& get_boids();
+
+	float get_radius();
 };
