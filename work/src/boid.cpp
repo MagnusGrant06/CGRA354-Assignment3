@@ -12,7 +12,7 @@ using namespace std;
 
 
 vec3 Boid::color() const {
-	return vec3(0, 1, 0);
+	return m_color;
 }
 
 
@@ -64,8 +64,7 @@ void Boid::update(float timestep, Scene *scene) {
 
 	valid_radius = scene->get_radius();
 	m_position = -scene->get_bound_size() + mod(m_position - -scene->get_bound_size(), scene->get_bound_size() - -scene->get_bound_size());
-	m_velocity += m_acceleration * timestep;
-	m_velocity = glm::clamp(m_velocity, scene->get_boid_min_v(), scene->get_boid_max_v());
+	m_velocity = glm::clamp(m_velocity += m_acceleration * timestep, scene->get_boid_min_v(), scene->get_boid_max_v());
 	m_position += m_velocity * timestep;
 }
 
@@ -77,7 +76,7 @@ glm::vec3 Boid::calculate_avoidance(std::vector<Boid>& boids) {
 
 		glm::vec3 displacement = this->m_position - other_boid.m_position;
 		float distance = glm::length(displacement);
-		if (distance > valid_radius || distance < 0.0001f) return glm::vec3(0);  // exit if distance is 0 to avoid division by 0 or out of range
+		if (distance > valid_radius || distance < 0.0001f) continue;  // exit if distance is 0 to avoid division by 0 or out of range
 		avoidance += displacement / (distance * distance);
 	}
 
@@ -89,7 +88,7 @@ glm::vec3 Boid::calculate_cohesion(std::vector<Boid>& boids) {
 	glm::vec3 average_distance = glm::vec3();
 	float neighbours = 1.0;
 	for (const Boid& other_boid : boids) {
-		if (&other_boid == this)continue;
+		if (&other_boid == this || other_boid.flock != this->flock)continue;
 		
 		glm::vec3 displacement = this->m_position - other_boid.m_position;
 		float distance = glm::length(displacement);
@@ -111,7 +110,7 @@ glm::vec3 Boid::calculate_alignment(std::vector<Boid>& boids) {
 	glm::vec3 total_velocity = glm::vec3();
 	float neighbours = 1.0;
 	for (const Boid& other_boid : boids) {
-		if (&other_boid == this)continue;
+		if (&other_boid == this || other_boid.flock != this->flock)continue;
 
 		glm::vec3 displacement = this->m_position - other_boid.m_position;
 		float distance = glm::length(displacement);

@@ -49,7 +49,7 @@ private:
 	int boid_num = 300;
 	float max_boid_v = 15.0;
 	float min_boid_v = -15.0;
-	float valid_radius = 5;
+	float valid_radius = 15;
 
 public:
 
@@ -57,6 +57,8 @@ public:
 	float cohesion_weight = 1.0;
 	float alignment_weight = 1.0;
 
+	std::vector<Boid> blue_flock;
+	std::vector<Boid> green_flock;
 
 	Scene();
 

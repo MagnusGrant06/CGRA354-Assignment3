@@ -75,7 +75,7 @@ void Scene::loadCore() {
 	// this creates a boid with a random location in [-1, 1]^3 and random velocity (magnitude = 1)
 	m_boids.clear();
 	for (int i = 0; i < boid_num; i++) {
-		m_boids.push_back(Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v)));
+		m_boids.push_back(Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v),vec3(0,1,0), &green_flock));
 	}
 	//m_boids.push_back(Boid(linearRand(vec3(-1), vec3(1)), sphericalRand(1.0)));
 
@@ -91,7 +91,22 @@ void Scene::loadCompletion() {
 
 	// YOUR CODE GOES HERE
 	// ...
-
+	m_boids.clear();
+	blue_flock.clear();
+	green_flock.clear();
+	for (int i = 0; i < boid_num; i++) {
+		if (i < boid_num / 2) {
+			Boid b(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(0, 0, 1), &blue_flock);
+			m_boids.push_back(b);
+			blue_flock.push_back(b);
+		}
+		else {
+			Boid b(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(0, 1, 0), &green_flock);
+			m_boids.push_back(b);
+			green_flock.push_back(b);
+		}
+		
+	}
 }
 
 
@@ -258,12 +273,12 @@ void Scene::renderGUI() {
 	//-------------------------------------------------------------
 	
 	ImGui::SliderFloat3("Bound hsize", value_ptr(m_bound_hsize), 0, 100.0, "%.0f");
-	ImGui::SliderFloat("Minimum Boid Speed", &min_boid_v, 1.0, 20.0);
+	ImGui::SliderFloat("Minimum Boid Speed", &min_boid_v, -20.0, -1.0);
 	ImGui::SliderFloat("Maximum Boid Speed", &max_boid_v, 1.0, 20.0);
-	ImGui::SliderFloat("Neighbourhood Size", &valid_radius,0.1,10);
-	ImGui::SliderFloat("Avoidance Weight", &avoidance_weight, 0.1, 5.0);
-	ImGui::SliderFloat("Cohesion Weight", &cohesion_weight, 0.1, 5.0);
-	ImGui::SliderFloat("Alignment Weight", &alignment_weight, 0.1, 5.0);
+	ImGui::SliderFloat("Neighbourhood Size", &valid_radius,0.1,50);
+	ImGui::SliderFloat("Avoidance Weight", &avoidance_weight, 0.1, 100.0);
+	ImGui::SliderFloat("Cohesion Weight", &cohesion_weight, 0.1, 100.0);
+	ImGui::SliderFloat("Alignment Weight", &alignment_weight, 0.1, 100.0);
 	// YOUR CODE GOES HERE
 	// ...
 
