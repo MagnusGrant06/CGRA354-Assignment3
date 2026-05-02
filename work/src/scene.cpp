@@ -16,6 +16,7 @@
 // project
 #include "scene.hpp"
 #include "boid.hpp"
+#include "predator_boid.hpp"
 #include "cgra/cgra_geometry.hpp"
 #include "cgra/cgra_image.hpp"
 #include "cgra/cgra_wavefront.hpp"
@@ -75,7 +76,7 @@ void Scene::loadCore() {
 	// this creates a boid with a random location in [-1, 1]^3 and random velocity (magnitude = 1)
 	m_boids.clear();
 	for (int i = 0; i < boid_num; i++) {
-		m_boids.push_back(Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v),vec3(0,1,0), &green_flock));
+		m_boids.push_back( new Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v),vec3(0,1,0), &green_flock));
 	}
 	//m_boids.push_back(Boid(linearRand(vec3(-1), vec3(1)), sphericalRand(1.0)));
 
@@ -95,13 +96,18 @@ void Scene::loadCompletion() {
 	blue_flock.clear();
 	green_flock.clear();
 	for (int i = 0; i < boid_num; i++) {
-		if (i < boid_num / 2) {
-			Boid b(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(0, 0, 1), &blue_flock);
+		if (i > boid_num - 3) {
+			Boid* b = new PredatorBoid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(1, 0, 0), &red_flock, m_boids[glm::linearRand(0,boid_num-2)]);
+			m_boids.push_back(b);
+			red_flock.push_back(b);
+		}
+		else if (i < boid_num / 2) {
+			Boid* b = new Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(0, 0, 1), &blue_flock);
 			m_boids.push_back(b);
 			blue_flock.push_back(b);
 		}
 		else {
-			Boid b(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(0, 1, 0), &green_flock);
+			Boid* b = new Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(0, 1, 0), &green_flock);
 			m_boids.push_back(b);
 			green_flock.push_back(b);
 		}
@@ -135,22 +141,26 @@ float Scene::get_boid_min_v() {
 	return min_boid_v;
 }
 
-std::vector<Boid>& Scene::get_boids() {
-	return m_boids;
-}
-
 float Scene::get_radius() {
 	return valid_radius;
 }
 
+float Scene::get_prey_distance() {
+	return max_prey_distance;
+}
+
+std::vector<Boid*>& Scene::get_boids() {
+	return m_boids;
+}
+
 
 void Scene::update(float timestep) {
-	for (Boid &b : m_boids) {
-		b.calculateForces(this);
+	for (Boid* &b : m_boids) {
+		b->calculateForces(this);
 	}
 
-	for (Boid &b : m_boids) {
-		b.update(timestep, this);
+	for (Boid* &b : m_boids) {
+		b->update(timestep, this);
 	}
 }
 
@@ -194,10 +204,10 @@ void Scene::draw(const mat4 &proj, const mat4 &view) {
 
 	// draw boids
 	//
-	for (const Boid &b : m_boids) {
+	for (Boid* &b : m_boids) {
 
 		// get the boid direction (default to z if no velocity)
-		vec3 dir = normalize(b.velocity());
+		vec3 dir = normalize(b->velocity());
 		if (dir.x != dir.x) dir = vec3(0, 0, 1);
 
 		// calculate the model matrix
@@ -220,7 +230,7 @@ void Scene::draw(const mat4 &proj, const mat4 &view) {
 		// translate the model to its worldspace position
 
 		// translate by m_position
-		model = translate(mat4(1), b.position()) * model;
+		model = translate(mat4(1), b->position()) * model;
 
 		// calculate the modelview matrix
 		mat4 modelview = view * model;
@@ -229,7 +239,7 @@ void Scene::draw(const mat4 &proj, const mat4 &view) {
 		glUseProgram(m_color_shader);
 		glUniformMatrix4fv(glGetUniformLocation(m_color_shader, "uProjectionMatrix"), 1, false, value_ptr(proj));
 		glUniformMatrix4fv(glGetUniformLocation(m_color_shader, "uModelViewMatrix"), 1, false, value_ptr(modelview));
-		glUniform3fv(glGetUniformLocation(m_color_shader, "uColor"), 1, value_ptr(b.color()));
+		glUniform3fv(glGetUniformLocation(m_color_shader, "uColor"), 1, value_ptr(b->color()));
 
 		// draw
 		m_simple_boid_mesh.draw();

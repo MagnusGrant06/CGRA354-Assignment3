@@ -33,7 +33,7 @@ private:
 
 	// scene data
 	glm::vec3 m_bound_hsize = glm::vec3(20);
-	std::vector<Boid> m_boids;
+	std::vector<Boid*> m_boids;
 
 
 	//-------------------------------------------------------------
@@ -51,14 +51,17 @@ private:
 	float min_boid_v = -15.0;
 	float valid_radius = 15;
 
+	float max_prey_distance = 30;
+
 public:
 
 	float avoidance_weight = 1.0;
 	float cohesion_weight = 1.0;
 	float alignment_weight = 1.0;
 
-	std::vector<Boid> blue_flock;
-	std::vector<Boid> green_flock;
+	std::vector<Boid*> blue_flock;
+	std::vector<Boid*> green_flock;
+	std::vector<Boid*> red_flock;
 
 	Scene();
 
@@ -76,8 +79,8 @@ public:
 	// called every frame (to fill out a ImGui::TreeNode)
 	void renderGUI();
 
-	// returns a const reference to the boids vector
-	const std::vector<Boid> & boids() const { return m_boids; }
+	// returns a const reference to the boids vector	
+	const std::vector<Boid*> & boids() const { return m_boids; }
 
 	// returns the half-size of the bounding box (centered around the origin)
 	glm::vec3 bound() const { return m_bound_hsize; }
@@ -90,7 +93,9 @@ public:
 
 	float get_boid_min_v();
 
-	std::vector<Boid>& get_boids();
-
 	float get_radius();
+
+	float get_prey_distance();
+
+	std::vector<Boid*>& get_boids();
 };
