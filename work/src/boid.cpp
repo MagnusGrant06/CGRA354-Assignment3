@@ -64,7 +64,16 @@ void Boid::update(float timestep, Scene *scene) {
 
 	valid_radius = scene->get_radius();
 	m_position = -scene->get_bound_size() + mod(m_position - -scene->get_bound_size(), scene->get_bound_size() - -scene->get_bound_size());
-	m_velocity = glm::clamp(m_velocity += m_acceleration * timestep, scene->get_boid_min_v(), scene->get_boid_max_v());
+	//clamp velocity
+	m_velocity += m_acceleration * timestep;
+	if (glm::length(m_velocity) > scene->get_boid_max_v()) {
+		if (this->flock == &scene->red_flock) {
+			m_velocity = m_velocity / glm::length(m_velocity) * 20.0f;
+		}
+		else {
+			m_velocity = m_velocity / glm::length(m_velocity) * scene->get_boid_max_v();
+		}
+	}
 	m_position += m_velocity * timestep;
 }
 

@@ -96,7 +96,7 @@ void Scene::loadCompletion() {
 	blue_flock.clear();
 	green_flock.clear();
 	for (int i = 0; i < boid_num; i++) {
-		if (i > boid_num - 3) {
+		if (i > boid_num - 2) {
 			Boid* b = new PredatorBoid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(1, 0, 0), &red_flock, m_boids[glm::linearRand(0,boid_num-2)]);
 			m_boids.push_back(b);
 			red_flock.push_back(b);

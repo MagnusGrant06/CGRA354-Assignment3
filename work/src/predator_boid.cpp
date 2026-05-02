@@ -2,17 +2,25 @@
 #include "scene.hpp"
 
 void PredatorBoid::calculateForces(Scene *scene) {
-	glm::vec3 displacement = m_position - target_boid->m_position;
+	m_acceleration = glm::vec3(0);
+	glm::vec3 displacement =  target_boid->m_position - m_position;
 	float dist = glm::length(displacement);
 	if (dist > scene->get_prey_distance()) change_target(scene->boids());
-	calculate_seek(target_boid, dist);
-	std::cout << target_boid->m_color.x << target_boid->m_color.y << target_boid->m_color.z << std::endl;
+	glm::vec3 temp = calculate_seek(target_boid, 1.0, dist);
+	//std::cout << temp.x << " " << temp.y << " " << temp.z << std::endl;
+	//std::cout << target_boid->m_position.x << " " << target_boid->m_position.y << std::endl;
+	m_velocity += temp;
+	//std::cout << m_velocity.x << " " << m_velocity.y << " " << m_velocity.z << std::endl;
+	//std::cout << m_acceleration.x << " " << m_acceleration.y << " " << m_acceleration.z << std::endl;
 }
 
-glm::vec3 PredatorBoid::calculate_seek(Boid* target, float distance_weight) {
+glm::vec3 PredatorBoid::calculate_seek(Boid* target, float distance_weight, float distance) {
 	glm::vec3 target_pos = target->m_position;
-	return m_velocity * (target_pos * distance_weight);
-	std::cout << "yeh" << std::endl;
+	glm::vec3 target_v = target->m_velocity;
+	glm::vec3 future_pos =  glm::normalize(target_pos + (target_v * (distance_weight * distance))) * 20.0f;
+
+	glm::vec3 desired_force = (future_pos - m_position);
+	return desired_force - m_velocity;
 }
 
 Boid* PredatorBoid::change_target(const std::vector<Boid*>& boids) {
@@ -20,14 +28,12 @@ Boid* PredatorBoid::change_target(const std::vector<Boid*>& boids) {
 	Boid* min_boid = boids[0];
 	for (Boid* b : boids) {
 		if (this == b) continue;
-		glm::vec3 displacement = m_position - b->m_position;
+		glm::vec3 displacement = b->m_position - m_position;
 		float dist = glm::length(displacement);
-
 		if (dist < min_dist) {
 			min_dist = dist;
 			min_boid = b;
 		}
 	}
-	std::cout << "yeh" << std::endl;
 	return min_boid;
 }

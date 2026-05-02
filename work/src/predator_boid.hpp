@@ -11,7 +11,7 @@ public:
 
 	void calculateForces(Scene *scene) override;
 	
-	glm::vec3 calculate_seek(Boid* target, float distance_weight);
+	glm::vec3 calculate_seek(Boid* target, float distance_weight, float distance);
 
 	Boid* change_target(const std::vector<Boid*>& boids);
 	//glm::vec3 calculate_avoidance(std::vector<Boid>& boids) override;
