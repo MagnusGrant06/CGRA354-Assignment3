@@ -30,6 +30,7 @@ private:
 	bool m_show_aabb = true;
 	bool m_show_axis = false;
 	bool m_show_skymap = false;
+	bool challenge = false;
 
 	// scene data
 	glm::vec3 m_bound_hsize = glm::vec3(20);
@@ -53,8 +54,19 @@ private:
 
 	float max_prey_distance = 30;
 
+	float sphere_radius;
+	float boid_radius = 0.5;
+
+	//vector of vertices to store vertices of sphere to calculate radius
+	std::vector<cgra::mesh_vertex> sphere_vertices;
 public:
 
+	struct Sphere {
+		glm::vec3 pos;
+		float radius;
+	};
+
+	std::vector<Scene::Sphere> spheres;
 	float avoidance_weight = 1.0;
 	float cohesion_weight = 1.0;
 	float alignment_weight = 1.0;
@@ -98,4 +110,8 @@ public:
 	float get_prey_distance();
 
 	std::vector<Boid*>& get_boids();
+
+	std::vector<Scene::Sphere> get_spheres();
+
+	static float get_mesh_radius(std::vector<cgra::mesh_vertex> vertices);
 };

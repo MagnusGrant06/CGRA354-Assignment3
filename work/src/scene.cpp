@@ -39,6 +39,7 @@ Scene::Scene() {
 	m_predator_mesh = predator_md.build();
 
 	cgra::mesh_builder sphere_md = cgra::load_wavefront_data(CGRA_WORKDIR + string("res/models/sphere.obj"));
+	sphere_vertices = sphere_md.vertices;
 	m_sphere_mesh = sphere_md.build();
 
 	// load color shader
@@ -74,7 +75,11 @@ void Scene::loadCore() {
 	// ...
 
 	// this creates a boid with a random location in [-1, 1]^3 and random velocity (magnitude = 1)
+	challenge = false;
 	m_boids.clear();
+	green_flock.clear();
+	blue_flock.clear();
+	red_flock.clear();
 	for (int i = 0; i < boid_num; i++) {
 		m_boids.push_back( new Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v),vec3(0,1,0), &green_flock));
 	}
@@ -92,11 +97,13 @@ void Scene::loadCompletion() {
 
 	// YOUR CODE GOES HERE
 	// ...
+	challenge = false;
 	m_boids.clear();
 	blue_flock.clear();
 	green_flock.clear();
+	red_flock.clear();
 	for (int i = 0; i < boid_num; i++) {
-		if (i > boid_num - 2) {
+		if (i > boid_num - 3) {
 			Boid* b = new PredatorBoid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(1, 0, 0), &red_flock, m_boids[glm::linearRand(0,boid_num-2)]);
 			m_boids.push_back(b);
 			red_flock.push_back(b);
@@ -126,7 +133,21 @@ void Scene::loadChallenge() {
 
 	// YOUR CODE GOES HERE
 	// ...
+	challenge = true;
+	m_boids.clear();
+	green_flock.clear();
+	blue_flock.clear();
+	red_flock.clear();
+	for (int i = 0; i < boid_num; i++) {
+		m_boids.push_back(new Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(0, 1, 0), &green_flock));
+	}
 
+	sphere_radius = get_mesh_radius(sphere_vertices) * 3.0;
+	for (int i = -1; i < 2; i++) {
+		Sphere s = Sphere(glm::vec3(i * 10), sphere_radius);
+		spheres.push_back(s);
+	}
+	
 }
 
 glm::vec3 Scene::get_bound_size() {
@@ -151,6 +172,28 @@ float Scene::get_prey_distance() {
 
 std::vector<Boid*>& Scene::get_boids() {
 	return m_boids;
+}
+
+//method to caluclate radius for use in object avoidance
+float Scene::get_mesh_radius(std::vector<cgra::mesh_vertex> vertices) {
+	glm::vec3 min_vert = glm::vec3(FLT_MAX);
+	glm::vec3 max_vert = glm::vec3(FLT_MIN);
+
+	for (cgra::mesh_vertex vertex : vertices) {
+		float length = glm::length(vertex.pos);
+		if (length < glm::length(min_vert)){
+			min_vert = vertex.pos;
+		}
+		else if (length > glm::length(max_vert)) {
+			max_vert = vertex.pos;
+		}
+	}
+	float radius = length(max_vert - min_vert) / 2;
+	return radius;
+}
+
+std::vector<Scene::Sphere> Scene::get_spheres() {
+	return spheres;
 }
 
 
@@ -200,6 +243,18 @@ void Scene::draw(const mat4 &proj, const mat4 &view) {
 		glUniform3fv(glGetUniformLocation(m_aabb_shader, "uMax"), 1, value_ptr(m_bound_hsize));
 		glUniform3fv(glGetUniformLocation(m_aabb_shader, "uMin"), 1, value_ptr(-m_bound_hsize));
 		cgra::draw_dummy(12);
+	}
+	if (challenge) {
+		for (Sphere s : spheres) {
+			glm::mat4 sphere_model(1);
+			sphere_model = translate(sphere_model, s.pos);
+			sphere_model = scale(sphere_model, glm::vec3(3.0));
+			glUseProgram(m_color_shader);
+			glUniformMatrix4fv(glGetUniformLocation(m_color_shader, "uProjectionMatrix"), 1, false, value_ptr(proj));
+			glUniformMatrix4fv(glGetUniformLocation(m_color_shader, "uModelViewMatrix"), 1, false, value_ptr(view * sphere_model));
+			glUniform3fv(glGetUniformLocation(m_color_shader, "uColor"), 1, value_ptr(glm::vec3(1, 1, 1)));
+			m_sphere_mesh.draw();
+		}
 	}
 
 	// draw boids

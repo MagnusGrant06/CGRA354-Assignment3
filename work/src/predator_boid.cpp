@@ -17,7 +17,9 @@ void PredatorBoid::calculateForces(Scene *scene) {
 glm::vec3 PredatorBoid::calculate_seek(Boid* target, float distance_weight, float distance) {
 	glm::vec3 target_pos = target->m_position;
 	glm::vec3 target_v = target->m_velocity;
-	glm::vec3 future_pos =  glm::normalize(target_pos + (target_v * (distance_weight * distance))) * 20.0f;
+	float look_ahead = glm::clamp(distance / 30.0f,0.0f,0.5f);
+
+	glm::vec3 future_pos = target_pos + (target_v * look_ahead);
 
 	glm::vec3 desired_force = (future_pos - m_position);
 	return desired_force - m_velocity;
