@@ -56,6 +56,7 @@ private:
 
 	float sphere_radius;
 	float boid_radius = 0.5;
+	float sphere_size = 3.5f;
 
 	//vector of vertices to store vertices of sphere to calculate radius
 	std::vector<cgra::mesh_vertex> sphere_vertices;

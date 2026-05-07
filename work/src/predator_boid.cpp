@@ -5,13 +5,9 @@ void PredatorBoid::calculateForces(Scene *scene) {
 	m_acceleration = glm::vec3(0);
 	glm::vec3 displacement =  target_boid->m_position - m_position;
 	float dist = glm::length(displacement);
-	if (dist > scene->get_prey_distance()) change_target(scene->boids());
+	if (dist > scene->get_prey_distance()) target_boid = change_target(scene->boids());
 	glm::vec3 temp = calculate_seek(target_boid, 1.0, dist);
-	//std::cout << temp.x << " " << temp.y << " " << temp.z << std::endl;
-	//std::cout << target_boid->m_position.x << " " << target_boid->m_position.y << std::endl;
-	m_velocity += temp;
-	//std::cout << m_velocity.x << " " << m_velocity.y << " " << m_velocity.z << std::endl;
-	//std::cout << m_acceleration.x << " " << m_acceleration.y << " " << m_acceleration.z << std::endl;
+	m_acceleration += temp;
 }
 
 glm::vec3 PredatorBoid::calculate_seek(Boid* target, float distance_weight, float distance) {

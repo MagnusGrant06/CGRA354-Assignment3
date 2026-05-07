@@ -41,7 +41,9 @@ public:
 	virtual glm::vec3 calculate_cohesion(std::vector<Boid*>& boids);
 	virtual glm::vec3 calculate_alignment(std::vector<Boid*>& boids);
 
-	glm::vec3 flee(std::vector<Boid*>& boids, Scene *scene);
+	glm::vec3 calculate_flee(std::vector<Boid*>& boids, Scene *scene);
 
 	glm::vec3 calculate_object_avoidance(std::vector<Scene::Sphere> objects);
+
+	static glm::vec3 clamp_vec_magnitude(glm::vec3 v, float magnitude);
 };

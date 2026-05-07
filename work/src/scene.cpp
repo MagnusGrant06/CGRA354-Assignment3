@@ -138,11 +138,11 @@ void Scene::loadChallenge() {
 	green_flock.clear();
 	blue_flock.clear();
 	red_flock.clear();
-	for (int i = 0; i < boid_num; i++) {
+	for (int i = 0; i <  boid_num; i++) {
 		m_boids.push_back(new Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(0, 1, 0), &green_flock));
 	}
 
-	sphere_radius = get_mesh_radius(sphere_vertices) * 3.0;
+	sphere_radius = get_mesh_radius(sphere_vertices) * sphere_size;
 	for (int i = -1; i < 2; i++) {
 		Sphere s = Sphere(glm::vec3(i * 10), sphere_radius);
 		spheres.push_back(s);
@@ -248,7 +248,7 @@ void Scene::draw(const mat4 &proj, const mat4 &view) {
 		for (Sphere s : spheres) {
 			glm::mat4 sphere_model(1);
 			sphere_model = translate(sphere_model, s.pos);
-			sphere_model = scale(sphere_model, glm::vec3(3.0));
+			sphere_model = scale(sphere_model, glm::vec3(sphere_size));
 			glUseProgram(m_color_shader);
 			glUniformMatrix4fv(glGetUniformLocation(m_color_shader, "uProjectionMatrix"), 1, false, value_ptr(proj));
 			glUniformMatrix4fv(glGetUniformLocation(m_color_shader, "uModelViewMatrix"), 1, false, value_ptr(view * sphere_model));
