@@ -83,7 +83,6 @@ void Scene::loadCore() {
 	for (int i = 0; i < boid_num; i++) {
 		m_boids.push_back( new Boid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v),vec3(0,1,0), &green_flock));
 	}
-	//m_boids.push_back(Boid(linearRand(vec3(-1), vec3(1)), sphericalRand(1.0)));
 
 }
 
@@ -102,6 +101,8 @@ void Scene::loadCompletion() {
 	blue_flock.clear();
 	green_flock.clear();
 	red_flock.clear();
+
+	//create 3 flocks instead of one, with one flock being that of the predators
 	for (int i = 0; i < boid_num; i++) {
 		if (i > boid_num - 3) {
 			Boid* b = new PredatorBoid(linearRand(vec3(-m_bound_hsize), vec3(m_bound_hsize)), sphericalRand(max_boid_v), vec3(1, 0, 0), &red_flock, m_boids[glm::linearRand(0,boid_num-2)]);
@@ -244,6 +245,7 @@ void Scene::draw(const mat4 &proj, const mat4 &view) {
 		glUniform3fv(glGetUniformLocation(m_aabb_shader, "uMin"), 1, value_ptr(-m_bound_hsize));
 		cgra::draw_dummy(12);
 	}
+	//draw spheres for object avoidance
 	if (challenge) {
 		for (Sphere s : spheres) {
 			glm::mat4 sphere_model(1);
@@ -341,9 +343,16 @@ void Scene::renderGUI() {
 	ImGui::SliderFloat("Minimum Boid Speed", &min_boid_v, -20.0, -1.0);
 	ImGui::SliderFloat("Maximum Boid Speed", &max_boid_v, 1.0, 20.0);
 	ImGui::SliderFloat("Neighbourhood Size", &valid_radius,0.1,50);
+	ImGui::SliderFloat("Max boid acceleration", &max_boid_acceleration, 0.1, 100.0);
 	ImGui::SliderFloat("Avoidance Weight", &avoidance_weight, 0.1, 100.0);
 	ImGui::SliderFloat("Cohesion Weight", &cohesion_weight, 0.1, 100.0);
 	ImGui::SliderFloat("Alignment Weight", &alignment_weight, 0.1, 100.0);
+	ImGui::SliderFloat("Maximum Predator Speed", &max_predator_v, 1.0, 50.0);
+	ImGui::SliderFloat("Max predator acceleration", &max_predator_acceleration, 0.1, 150.0);
+	ImGui::SliderFloat("Predator seek strength", &predator_seek_strength, -5.0, 5.0);
+	ImGui::SliderFloat("Predator neighbourhood size", &max_prey_distance, 1.0, 100.0);
+	ImGui::SliderFloat("Boid Flee Weight", &flee_weight, 0.1, 100.0);
+	ImGui::SliderFloat("Boid object avoidance", &object_avoidance_strength, 0.0, 2000.0);
 	// YOUR CODE GOES HERE
 	// ...
 

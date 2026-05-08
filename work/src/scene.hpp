@@ -34,6 +34,7 @@ private:
 
 	// scene data
 	glm::vec3 m_bound_hsize = glm::vec3(20);
+	//had to change boids to pointers to allow for polymorphism to predator boids
 	std::vector<Boid*> m_boids;
 
 
@@ -67,10 +68,17 @@ public:
 		float radius;
 	};
 
+	float max_predator_v = 20.0f;
+	float object_avoidance_strength = 500.0f;
+	float predator_seek_strength = 1.0f;
+	float max_predator_acceleration = 30.0f;
+
 	std::vector<Scene::Sphere> spheres;
 	float avoidance_weight = 1.0;
 	float cohesion_weight = 1.0;
 	float alignment_weight = 1.0;
+	float flee_weight = 1.0f;
+	float max_boid_acceleration = 20.0f;
 
 	std::vector<Boid*> blue_flock;
 	std::vector<Boid*> green_flock;

@@ -43,7 +43,7 @@ public:
 
 	glm::vec3 calculate_flee(std::vector<Boid*>& boids, Scene *scene);
 
-	glm::vec3 calculate_object_avoidance(std::vector<Scene::Sphere> objects);
+	glm::vec3 calculate_object_avoidance(std::vector<Scene::Sphere> objects, float strength);
 
 	static glm::vec3 clamp_vec_magnitude(glm::vec3 v, float magnitude);
 };

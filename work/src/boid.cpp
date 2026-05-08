@@ -45,9 +45,10 @@ void Boid::calculateForces(Scene *scene) {
 	glm::vec3 cohesion = clamp_vec_magnitude(calculate_cohesion(boids), 15.0f);
 	glm::vec3 alignment = clamp_vec_magnitude(calculate_alignment(boids), 15.0f);
 	glm::vec3 flee_strength = calculate_flee(boids,scene);
-	glm::vec3 object_avoidance = calculate_object_avoidance(scene->spheres);
+	glm::vec3 object_avoidance = calculate_object_avoidance(scene->spheres, scene->object_avoidance_strength);
 
-	m_acceleration += object_avoidance + flee_strength + (avoidance * scene->avoidance_weight) + (cohesion * scene->cohesion_weight) + (alignment * scene->alignment_weight);
+	m_acceleration += object_avoidance + (flee_strength * scene->flee_weight) + (avoidance * scene->avoidance_weight) + (cohesion * scene->cohesion_weight) + (alignment * scene->alignment_weight);
+	m_acceleration = clamp_vec_magnitude(m_acceleration, scene->max_boid_acceleration);
 }
 
 
@@ -63,26 +64,28 @@ void Boid::update(float timestep, Scene *scene) {
 
 	// YOUR CODE GOES HERE
 	// ...
+
 	valid_radius = scene->get_radius();
+
 	//clamp velocity
 	m_velocity += m_acceleration * timestep;
-	if (glm::length(m_velocity) > scene->get_boid_max_v()) {
-		if (this->flock == &scene->red_flock) {
-			m_velocity = m_velocity / glm::length(m_velocity) * 20.0f;
-		}
-		else {
-			m_velocity = m_velocity / glm::length(m_velocity) * scene->get_boid_max_v();
-		}
+	if (this->flock == &scene->red_flock) {
+		m_velocity = (m_velocity / glm::length(m_velocity)) * scene->max_predator_v;
 	}
+	else {
+		m_velocity = clamp_vec_magnitude(m_velocity, scene->get_boid_max_v());
+	}
+
 	m_position += m_velocity * timestep;
 	m_position = -scene->get_bound_size() + mod(m_position - -scene->get_bound_size(), scene->get_bound_size() - -scene->get_bound_size());
 }
 
+//calculate avoidance using formula from lecture slides
 glm::vec3 Boid::calculate_avoidance(std::vector<Boid*>& boids) {
 
 	glm::vec3 avoidance = glm::vec3(0);
 	for (const Boid* other_boid : boids) {
-		if (this == other_boid) continue;
+		if (this == other_boid) continue; //skip if self
 
 		glm::vec3 displacement = this->m_position - other_boid->m_position;
 		float distance = glm::length(displacement);
@@ -95,11 +98,13 @@ glm::vec3 Boid::calculate_avoidance(std::vector<Boid*>& boids) {
 
 }
 
+
+//calculate cohesion using formula from lecture slides, but also only if from the same flock
 glm::vec3 Boid::calculate_cohesion(std::vector<Boid*>& boids) {
 	glm::vec3 average_distance = glm::vec3();
 	float neighbours = 1.0;
 	for (const Boid* other_boid : boids) {
-		if (other_boid == this || other_boid->flock != this->flock)continue;
+		if (other_boid == this || other_boid->flock != this->flock)continue;  //skip if self or not in this flock
 
 		glm::vec3 displacement = this->m_position - other_boid->m_position;
 		float distance = glm::length(displacement);
@@ -116,12 +121,13 @@ glm::vec3 Boid::calculate_cohesion(std::vector<Boid*>& boids) {
 
 }
 
+//calculate alignment same as cohesion but with velocity, also only if from the same flock
 glm::vec3 Boid::calculate_alignment(std::vector<Boid*>& boids) {
 
 	glm::vec3 total_velocity = glm::vec3();
 	float neighbours = 1.0;
 	for (const Boid* other_boid : boids) {
-		if (other_boid == this || other_boid->flock != this->flock)continue;
+		if (other_boid == this || other_boid->flock != this->flock)continue; //skip if self or not in this flock
 
 		glm::vec3 displacement = this->m_position - other_boid->m_position;
 		float distance = glm::length(displacement);
@@ -137,6 +143,7 @@ glm::vec3 Boid::calculate_alignment(std::vector<Boid*>& boids) {
 
 }
 
+//flee in opposite direction from the predator, making it harder for predator to catch
 glm::vec3 Boid::calculate_flee(std::vector<Boid*>& boids, Scene* scene) {
 	glm::vec3 flee_strength = glm::vec3(0);
 	for (Boid* other_boid : boids) {
@@ -150,7 +157,8 @@ glm::vec3 Boid::calculate_flee(std::vector<Boid*>& boids, Scene* scene) {
 	return flee_strength;
 }
 
-glm::vec3 Boid::calculate_object_avoidance(std::vector<Scene::Sphere> objects) {
+//calculate object avoidance by using sphere intersects show in lectures
+glm::vec3 Boid::calculate_object_avoidance(std::vector<Scene::Sphere> objects, float strength) {
 	float boid_radius = 0.5;
 	glm::vec3 total_avoidance = glm::vec3(0);
 
@@ -159,22 +167,22 @@ glm::vec3 Boid::calculate_object_avoidance(std::vector<Scene::Sphere> objects) {
 		glm::vec3 D = glm::normalize(m_velocity);
 		glm::vec3 C = sphere.pos;
 		glm::vec3 O = m_position;
-		float R = sphere.radius + boid_radius + 2.0f;
+		float R = sphere.radius + boid_radius + 2.0f;  //slightly increase 'hitbox' size to avoid boid going through in edge cases
 
 		float a = glm::dot(D, D);
 		float b = glm::dot(2.0f * (O - C), D);
 		float c = glm::dot((O - C), (O - C)) - R * R;
 
 		float discriminant = (b * b) - (4 * a * c);
-		if (discriminant < 0) continue;
+		if (discriminant < 0) continue; //early exit if discriminant is negative, no intersects
 
 		float t0 = (-b + glm::sqrt(discriminant)) / (2.0f * a);
 		float t1 = (-b - glm::sqrt(discriminant)) / (2.0f * a);
 
-		if (t1 > 0 && t1 < 10.0f){
+		if (t1 > 0 && t1 < 10.0f){ //only avoid if t1 is positive (ahead of boid) and within 'look ahead' distance
 			glm::vec3 intersection = O + t1 * D;
 			glm::vec3 avoidance = glm::normalize(intersection - C) * 10.0f;
-			total_avoidance += avoidance*500.0f;
+			total_avoidance += avoidance*strength;
 		}
 
 

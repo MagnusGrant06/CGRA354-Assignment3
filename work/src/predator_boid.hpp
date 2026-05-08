@@ -1,5 +1,6 @@
 #include "boid.hpp"
 
+//subclass that inherits certain parts from boid to make drawing and basic movement easier
 class PredatorBoid : public Boid {
 
 private:
@@ -14,7 +15,4 @@ public:
 	glm::vec3 calculate_seek(Boid* target, float distance_weight, float distance);
 
 	Boid* change_target(const std::vector<Boid*>& boids);
-	//glm::vec3 calculate_avoidance(std::vector<Boid>& boids) override;
-	//glm::vec3 calculate_cohesion(std::vector<Boid>& boids) override;
-	//glm::vec3 calculate_alignment(std::vector<Boid>& boids) override;
 };

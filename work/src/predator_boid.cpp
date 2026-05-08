@@ -1,15 +1,18 @@
 #include "predator_boid.hpp"
 #include "scene.hpp"
 
+//override calculateforces from boid to just move towards target, with no avoidance cohesion etc
 void PredatorBoid::calculateForces(Scene *scene) {
 	m_acceleration = glm::vec3(0);
 	glm::vec3 displacement =  target_boid->m_position - m_position;
 	float dist = glm::length(displacement);
 	if (dist > scene->get_prey_distance()) target_boid = change_target(scene->boids());
-	glm::vec3 temp = calculate_seek(target_boid, 1.0, dist);
-	m_acceleration += temp;
+	glm::vec3 seek = calculate_seek(target_boid, 1.0, dist);
+	m_acceleration += seek * scene->predator_seek_strength;
+	m_acceleration = clamp_vec_magnitude(m_acceleration, scene->max_predator_acceleration);
 }
 
+//calculate seek force using formula from lectures
 glm::vec3 PredatorBoid::calculate_seek(Boid* target, float distance_weight, float distance) {
 	glm::vec3 target_pos = target->m_position;
 	glm::vec3 target_v = target->m_velocity;
@@ -21,6 +24,7 @@ glm::vec3 PredatorBoid::calculate_seek(Boid* target, float distance_weight, floa
 	return desired_force - m_velocity;
 }
 
+//change target if current target is out of range
 Boid* PredatorBoid::change_target(const std::vector<Boid*>& boids) {
 	float min_dist = FLT_MAX;
 	Boid* min_boid = boids[0];
